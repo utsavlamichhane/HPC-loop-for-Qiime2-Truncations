@@ -11,18 +11,18 @@
 #SBATCH --error=%x_%j.err
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=ul54354@uga.edu
-# Absolute path to the soonie.qza file
-SOONIE_PATH="/home/ul54354/soonie.qza"
+# Absolute path to the DNA_sequence.qza file
+FILE_PATH="/home/ul54354/DNA_sequence.qza"
 cd $SLURM_SUBMIT_DIR
 export LC_ALL=en_US.UTF-8
 ml QIIME2/2023.2
-# First denoising run
+# First denoising run without truncations
 mkdir -p /lscratch/$ul54354/$SLURM_JOB_ID
-cp -R $SOONIE_PATH /lscratch/$ul54354/$SLURM_JOB_ID
+cp -R $FILE_PATH /lscratch/$ul54354/$SLURM_JOB_ID
 cd /lscratch/$ul54354/$SLURM_JOB_ID
-if [[ -f soonie.qza ]]; then
+if [[ -f DNA_sequence.qza ]]; then
     qiime dada2 denoise-paired \
-    --i-demultiplexed-seqs soonie.qza \
+    --i-demultiplexed-seqs DNA_sequence.qza \
     --p-trunc-len-f 0 \
     --p-trunc-len-r 0 \
     --p-trim-left-f 20 \
@@ -36,19 +36,19 @@ if [[ -f soonie.qza ]]; then
     cp -R dada2_stats_0.qza $SLURM_SUBMIT_DIR
     rm -r -f /lscratch/$ul54354/$SLURM_JOB_ID
 else
-    echo "Error: soonie.qza not found in /lscratch/$ul54354/$SLURM_JOB_ID"
+    echo "Error: DNA_sequence.qza not found in /lscratch/$ul54354/$SLURM_JOB_ID"
     exit 1
 fi
-# Denoising for the combinations according to dr_lourenco instruction f_245 to f_248
+# Denoising for the combinations f_245 to f_248
 for trunc_f in {245..248}; do
     for trunc_r in {234..241}; do
         FILE_SUFFIX="f${trunc_f}_r${trunc_r}"
         mkdir -p /lscratch/$ul54354/$SLURM_JOB_ID
         cp -R $SOONIE_PATH /lscratch/$ul54354/$SLURM_JOB_ID
         cd /lscratch/$ul54354/$SLURM_JOB_ID
-        if [[ -f soonie.qza ]]; then
+        if [[ -f DNA_sequence.qza ]]; then
             qiime dada2 denoise-paired \
-            --i-demultiplexed-seqs soonie.qza \
+            --i-demultiplexed-seqs DNA_sequence.qza \
             --p-trunc-len-f $trunc_f \
             --p-trunc-len-r $trunc_r \
             --p-trim-left-f 20 \
@@ -62,7 +62,7 @@ for trunc_f in {245..248}; do
             cp -R dada2_stats_${FILE_SUFFIX}.qza $SLURM_SUBMIT_DIR
             rm -r -f /lscratch/$ul54354/$SLURM_JOB_ID
         else
-            echo "Error: soonie.qza not found in /lscratch/$ul54354/$SLURM_JOB_ID for truncation f=$trunc_f r=$trunc_r"
+            echo "Error: DNA_sequence.qza not found in /lscratch/$ul54354/$SLURM_JOB_ID for truncation f=$trunc_f r=$trunc_r"
             exit 1
         fi
     done
